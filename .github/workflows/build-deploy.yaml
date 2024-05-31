@@ -1,0 +1,48 @@
+name: "CI"
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --eval 'db.stats().ok' | grep 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: make install
+      - name: Lint black
+        run: make lint_black
+      - name: Lint isort
+        run: make lint_isort
+      - name: Lint pylint
+        run: make lint_pylint
+      - name: Run Tests
+        run: make tests
+      - name: Test coverage artifacts
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: coverage
+          path: coverage.xml
