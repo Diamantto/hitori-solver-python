@@ -11,7 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mongodb:
-        image: mongo
+        image: mongo:4.4.6
+        env:
+          POSTGRES_USER: diamantto
+          POSTGRES_PASSWORD: diamantto1234
+          POSTGRES_DB: main
         ports:
           - 27017:27017
         options: >-
